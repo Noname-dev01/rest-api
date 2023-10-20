@@ -1,5 +1,6 @@
 package example.restapi.events;
 
+import example.restapi.common.ErrorsResource;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.Link;
@@ -30,12 +31,12 @@ public class EventController {
     @PostMapping
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors){
         if (errors.hasErrors()){
-            return ResponseEntity.badRequest().build();
+            return badRequest(errors);
         }
 
         eventValidator.validate(eventDto,errors);
         if (errors.hasErrors()){
-            return ResponseEntity.badRequest().build();
+            return badRequest(errors);
         }
 
         Event event = modelMapper.map(eventDto, Event.class);
@@ -43,10 +44,14 @@ public class EventController {
         Event newEvent = eventRepository.save(event);
         WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
         URI createdUri = selfLinkBuilder.toUri();
-        EventResource eventResource = new EventResource(newEvent);
+        EventResource eventResource = new EventResource(event);
         eventResource.add(selfLinkBuilder.withRel("update-event"));
         eventResource.add(linkTo(EventController.class).withRel("query-events"));
         eventResource.add(Link.of("/docs/index.html#resources-events-create").withRel("profile"));
         return ResponseEntity.created(createdUri).body(eventResource);
+    }
+
+    private ResponseEntity badRequest(Errors errors) {
+        return ResponseEntity.badRequest().body(new ErrorsResource(errors));
     }
 }

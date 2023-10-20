@@ -1,9 +1,8 @@
 package example.restapi.common;
 
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.JsonSerializer;
-import org.codehaus.jackson.map.SerializerProvider;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.validation.Errors;
 
@@ -11,8 +10,10 @@ import java.io.IOException;
 
 @JsonComponent
 public class ErrorsSerializer extends JsonSerializer<Errors> {
+
     @Override
-    public void serialize(Errors errors, JsonGenerator gen, SerializerProvider provider) throws IOException, JsonProcessingException {
+    public void serialize(Errors errors, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        gen.writeFieldName("errors");
         gen.writeStartArray();
         errors.getFieldErrors().forEach(e -> {
             try {
